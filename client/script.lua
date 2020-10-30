@@ -2,6 +2,15 @@ local js = require "js"
 local diff = require "utils/diff"
 local json = require "json"
 
+local function Object(t)
+	local o = js.new(js.global.Object)
+	for k, v in pairs(t) do
+		assert(type(k) == "string" or js.typeof(k) == "symbol", "JavaScript only has string and symbol keys")
+		o[k] = v
+	end
+	return o
+end
+
 local function setup()
 
 	local roomState = {}
@@ -9,9 +18,9 @@ local function setup()
 	local textArea = js.global.document:getElementById "code"
 	local editor = js.global.CodeMirror:fromTextArea(
 		textArea,
-		{
+		Object {
 			lineNumbers = true,
-			mode = {name = "javascript", json = true},
+			mode = Object { name = "javascript", json = true },
 			indentWithTabs = true,
 			indentUnit = 4,
 			lineWrapping = true
@@ -27,10 +36,7 @@ local function setup()
 	ws.onmessage = function(self, ev)
 
 		local payload = json.decode(ev.data)
-		print(payload)
-
 		diff.patch(roomState, payload)
-
 		editor.doc:setValue(json.encode(roomState))
 	end
 
@@ -42,13 +48,13 @@ local function setup()
 	editor:on("blur", function()
 
 		local new = json.decode(editor.doc:getValue())
+
 		if not new then
 			editor.doc:setValue(json.encode(roomState))
 			return
 		end
-		
-		local payload = diff.diff(roomState, new)
 
+		local payload = diff.diff(roomState, new)
 		ws:send(json.encode(payload))
 	end)
 end
