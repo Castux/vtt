@@ -1,15 +1,18 @@
 local class = require "utils/class"
 local weblit = require "weblit"
+local Lobby = require "lobby"
+
 
 local Server = class()
 
 function Server:init()
 
+	math.randomseed(os.time())
+
+	self.lobby = Lobby()
 end
 
 function Server:run()
-
-	local sockets = {}
 
 	local app = weblit.app
 	app.bind {host = "0.0.0.0", port = 8080 }
@@ -19,35 +22,11 @@ function Server:run()
 
 	app.route({ path = "/" }, weblit.static("client"))
 
-	local function socketHandler (req, read, write)
+	app.websocket({ path = "/ws/:room" }, function(req, read, write)
+		self.lobby:handleClient(req, read, write)
+	end)
 
-		print("New client")
-		sockets[req.socket] = function(str)
-			write({
-				opcode = 1,
-				payload = str
-			})
-		end
-
-		for message in read do
-
-			print("Got:", message.payload)
-
-			for sock,writer in pairs(sockets) do
-				if sock ~= req.socket then
-					writer(message.payload .. " back")
-				end
-			end
-		end
-
-		write()
-		print("Client left")
-		sockets[req.socket] = nil
-	end
-
-	app.websocket({ path = "/ws" }, socketHandler)
 	app.start()
-
 end
 
 return Server
