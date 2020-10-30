@@ -10,6 +10,7 @@ function Server:init()
 	math.randomseed(os.time())
 
 	self.lobby = Lobby()
+	self.lobby:createRoom "test"
 end
 
 function Server:handleNew(req, res, go)

@@ -19,12 +19,13 @@ local function generateCode()
 	return code
 end
 
-function Lobby:createRoom()
+function Lobby:createRoom(code)
 
-	local code
-	repeat
-		code = generateCode()
-	until not self.rooms[code]
+	if not code then
+		repeat
+			code = generateCode()
+		until not self.rooms[code]
+	end
 
 	self.rooms[code] =
 	{
