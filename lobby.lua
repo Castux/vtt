@@ -1,4 +1,6 @@
 local class = require "utils/class"
+local diff = require "utils/diff"
+local json = require "json"
 
 local Lobby = class()
 
@@ -65,19 +67,31 @@ function Lobby:handleClient(req, read, write)
 	end
 
 	-- Otherwise, register them
+	-- Wrap the sender function for convenience
 
 	local client =
 	{
 		socket = req.socket,
-		write = write
+		send = function(payload)
+			write
+			{
+				opcode = 1,
+				payload = json.encode(payload)
+			}
+		end
 	}
 
 	room.clients[req.socket] = client
 
+	-- Send them the current room state
+
+	client.send(room.state)
+
 	-- Start main listening loop
 
 	for message in read do
-		self:broadcastToRoom(message.payload, room)
+		local payload = json.decode(message.payload)
+		self:handleMessage(room, client, payload)
 	end
 
 	-- Client disconnected, cleanup
@@ -85,6 +99,19 @@ function Lobby:handleClient(req, read, write)
 	write()
 	room.clients[req.socket] = nil
 	print("Client disconnected from " .. code, req.socket)
+end
+
+function Lobby:handleMessage(room, client, payload)
+
+	p(room.code, client.socket, payload)
+
+	-- Apply message to room as diff
+	diff.patch(room.state, payload)
+
+	p("New state", room.state)
+
+	-- Broadcast the changes
+	self:broadcastToRoom(room, payload)
 end
 
 return Lobby
