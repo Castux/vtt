@@ -42,6 +42,11 @@ local function setup()
 	editor:on("blur", function()
 
 		local new = json.decode(editor.doc:getValue())
+		if not new then
+			editor.doc:setValue(json.encode(roomState))
+			return
+		end
+		
 		local payload = diff.diff(roomState, new)
 
 		ws:send(json.encode(payload))
