@@ -12,6 +12,16 @@ function Server:init()
 	self.lobby = Lobby()
 end
 
+function Server:handleNew(req, res, go)
+
+	local code = self.lobby:createRoom()
+
+	res.code = 201
+	res.body = code
+
+	print("Room created", code)
+end
+
 function Server:run()
 
 	local app = weblit.app
@@ -20,7 +30,11 @@ function Server:run()
 	app.use(weblit.logger)
 	app.use(weblit.autoHeaders)
 
-	app.route({ path = "/" }, weblit.static("client"))
+	app.route({ path = "/", method = "GET" }, weblit.static("client"))
+
+	app.route({ path = "/new", method = "GET" }, function(req, res, go)
+		self:handleNew(req, res, go)
+	end)
 
 	app.websocket({ path = "/ws/:room" }, function(req, read, write)
 		self.lobby:handleClient(req, read, write)
