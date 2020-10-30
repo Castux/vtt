@@ -36,12 +36,24 @@ function Lobby:createRoom()
 	return code
 end
 
+function Lobby:broadcastToRoom(message, room)
+
+	for _,client in pairs(room.clients) do
+
+		client.write
+		{
+			opcode = 1,		-- text message
+			payload = message
+		}
+	end
+end
+
 function Lobby:handleClient(req, read, write)
 
 	local code = req.params.room
 	local room = self.rooms[code]
 
-	print("New client for room", code)
+	print("New client for room " .. code, req.socket)
 
 	-- If room does not exist, disconnect client
 
@@ -64,14 +76,14 @@ function Lobby:handleClient(req, read, write)
 	-- Start main listening loop
 
 	for message in read do
-
+		self:broadcastToRoom(message.payload, room)
 	end
 
 	-- Client disconnected, cleanup
 
 	write()
 	room.clients[req.socket] = nil
-	print("Client disconnected from", code)
+	print("Client disconnected from " .. code, req.socket)
 end
 
 return Lobby
