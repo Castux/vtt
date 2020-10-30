@@ -1,6 +1,10 @@
 local js = require "js"
+local diff = require "utils/diff"
+local json = require "json"
 
 local function setup()
+
+	local roomState = {}
 
 	local textArea = js.global.document:getElementById "code"
 	local editor = js.global.CodeMirror:fromTextArea(
@@ -21,7 +25,13 @@ local function setup()
 	end
 
 	ws.onmessage = function(self, ev)
-		editor.doc:setValue(ev.data)
+
+		local payload = json.decode(ev.data)
+		print(payload)
+
+		diff.patch(roomState, payload)
+
+		editor.doc:setValue(json.encode(roomState))
 	end
 
 	ws.onerror = ws.onmessage
@@ -30,7 +40,11 @@ local function setup()
 	end
 
 	editor:on("blur", function()
-		ws:send(editor.doc:getValue())
+
+		local new = json.decode(editor.doc:getValue())
+		local payload = diff.diff(roomState, new)
+
+		ws:send(json.encode(payload))
 	end)
 end
 

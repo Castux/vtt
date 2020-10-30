@@ -1,4 +1,4 @@
-package.path = './deps/?.lua;' .. package.path
+package.path = './deps/?.lua;./client/?.lua;' .. package.path
 
 local Server = require "server"
 
