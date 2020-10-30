@@ -39,15 +39,11 @@ function Lobby:createRoom(code)
 	return code
 end
 
-function Lobby:broadcastToRoom(message, room)
+function Lobby:broadcastToRoom(room, payload)
 
 	for _,client in pairs(room.clients) do
 
-		client.write
-		{
-			opcode = 1,		-- text message
-			payload = message
-		}
+		client.send(payload)
 	end
 end
 

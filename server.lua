@@ -2,7 +2,6 @@ local class = require "utils/class"
 local weblit = require "weblit"
 local Lobby = require "lobby"
 
-
 local Server = class()
 
 function Server:init()
@@ -31,7 +30,7 @@ function Server:run()
 	app.use(weblit.logger)
 	app.use(weblit.autoHeaders)
 
-	app.route({ path = "/", method = "GET" }, weblit.static("client"))
+	app.use(weblit.static("client"))
 
 	app.route({ path = "/new", method = "GET" }, function(req, res, go)
 		self:handleNew(req, res, go)
