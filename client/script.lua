@@ -13,6 +13,7 @@ end
 
 local function setup()
 
+	local roomStateId = nil
 	local roomState = {}
 
 	local textArea = js.global.document:getElementById "code"
@@ -36,7 +37,15 @@ local function setup()
 	ws.onmessage = function(self, ev)
 
 		local payload = json.decode(ev.data)
-		diff.patch(roomState, payload)
+
+		if payload.op == "full" then
+			roomStateId = payload.id
+			roomState = payload.state
+		elseif payload.op == "patch" then
+			roomStateId = payload.id
+			diff.patch(roomState, payload.diff)
+		end
+
 		editor.doc:setValue(json.encode(roomState))
 	end
 
@@ -54,7 +63,12 @@ local function setup()
 			return
 		end
 
-		local payload = diff.diff(roomState, new)
+		local payload =
+		{
+			id = roomStateId,
+			diff = diff.diff(roomState, new)
+		}
+		
 		ws:send(json.encode(payload))
 	end)
 end

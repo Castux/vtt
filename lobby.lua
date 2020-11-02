@@ -21,6 +21,10 @@ local function generateCode()
 	return code
 end
 
+local function randomId()
+	return math.random(1, 1e10)
+end
+
 function Lobby:createRoom(code)
 
 	if not code then
@@ -33,6 +37,7 @@ function Lobby:createRoom(code)
 	{
 		code = code,
 		state = {},
+		stateId = randomId(),
 		clients = {}	-- indexed by socket object
 	}
 
@@ -81,7 +86,12 @@ function Lobby:handleClient(req, read, write)
 
 	-- Send them the current room state
 
-	client.send(room.state)
+	client.send
+	{
+		op = "full",
+		id = room.stateId,
+		state =	room.state
+	}
 
 	-- Start main listening loop
 
@@ -99,15 +109,38 @@ end
 
 function Lobby:handleMessage(room, client, payload)
 
-	p(room.code, client.socket, payload)
+	p("New message", room.code, client.socket, payload)
 
+	-- Check that client is up to date
+	-- If not, reject the change and send back the full state
+
+	if payload.id ~= room.stateId then
+		client.send
+		{
+			op = "full",
+			id = room.stateId,
+			state =	room.state
+		}
+		return
+	end
+
+	-- Client is up to date
 	-- Apply message to room as diff
-	diff.patch(room.state, payload)
+	-- and generate new ID
 
-	p("New state", room.state)
+	diff.patch(room.state, payload.diff)
+	room.stateId = randomId()
+
+	p("New state", room.state, room.stateId)
 
 	-- Broadcast the changes
-	self:broadcastToRoom(room, payload)
+
+	self:broadcastToRoom(room,
+	{
+		op = "patch",
+		diff = payload.diff,
+		id = room.stateId
+	})
 end
 
 return Lobby
