@@ -14,7 +14,7 @@ The server runs on luvit 2.0, with the weblit application layer. On Unix-like pl
 git clone https://github.com/Castux/vtt.git
 cd vtt
 curl -L https://github.com/luvit/lit/raw/master/get-lit.sh | sh
-lit install creationix/weblit
+./lit install creationix/weblit
 ```
 
 You can now run the server with `./luvit server.lua`
