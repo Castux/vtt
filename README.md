@@ -17,4 +17,4 @@ curl -L https://github.com/luvit/lit/raw/master/get-lit.sh | sh
 ./lit install creationix/weblit
 ```
 
-You can now run the server with `./luvit main.lua`. The web clients are currently hard coded to use the "test" room. The server does not have room persistency yet.
+You can now run the server with `./luvit main.lua`, and web clients pointed to `http://127.0.0.1:8080/`. The web clients are currently hard coded to use the "test" room. The server does not have room persistency yet.
