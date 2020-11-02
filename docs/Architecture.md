@@ -41,7 +41,7 @@ Some design principles:
 - Rooms are in memory when in use, plus stored regularly to prevent data loss and reduce memory usage when inactive.
 - The backend also serves the client files (HTML, JS, CSS, Lua, etc.) via regular HTTP, although technically that could be hosted somewhere else.
 
-Whichever the room they want, the client fetches "/" and then connects to the room's websocket on "/ws/<room code>". Client facing URL could be either "/<room code>" (which the server still serves as "/") or "/?room=<room code>". It doesn't matter much.
+Whichever the room they want, the client fetches "/" and then connects to the room's websocket on "/ws/roomcode". Client facing URL could be either "/roomcode" (which the server still serves as "/") or "/?room=roomcode". It doesn't matter much.
 
 A new room can be created with a GET to "/new", which returns the code of the new room. Client can then as usual connect to the associated websocket and receive the (empty or default) room state.
 
