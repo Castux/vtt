@@ -18,3 +18,9 @@ curl -L https://github.com/luvit/lit/raw/master/get-lit.sh | sh
 ```
 
 You can now run the server with `./luvit main.lua`, and web clients pointed to `http://127.0.0.1:8080/`. The web clients are currently hard coded to use the "test" room. The server does not have room persistency yet.
+
+## Status
+
+This stayed at the proof of concept stage, as the main development went with other architectural choices.
+
+See the https://github.com/ArnoldSmith86/virtualtabletop project for the real thing! 
